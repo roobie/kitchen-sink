@@ -9,7 +9,12 @@
 #
 # -nic ... enables the default virtual network interface, using the virtio model
 # for transport. hostfwd maps the tcp port 10022 of the host machine to the
-# guest's port 22 over TCP
+# guest's port 22 over TCP. This means that one can access the guest via ssh
+# (given that the guest has sshd configured and running) as such:
+#
+# ssh user@localhost -p 10022
+#
+# NOTE: for root to be able to login via ssh, /etc/ssh/sshd_config must have "PermitRootLogin yes"
 #
 # -drive ... tells QEMU which image to load and how.
 #
