@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# See more info at https://www.linux-kvm.org/page/Networking
+#
+# Used by qemu to setup the TAP interface
+# QEMU wants this script to be executable and located at /etc/qemu-ifup
+
+set -x
+
+switch=virbr0
+
+if [ -n "$1" ];then
+        # tunctl -u `whoami` -t $1 (use ip tuntap instead!)
+        ip tuntap add $1 mode tap user `whoami`
+        ip link set $1 up
+        sleep 0.5s
+        # brctl addif $switch $1 (use ip link instead!)
+        ip link set $1 master $switch
+        exit 0
+else
+        echo "Error: no interface specified"
+        exit 1
+fi
