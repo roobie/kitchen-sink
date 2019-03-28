@@ -1,6 +1,11 @@
 #!/bin/sh
 #
 # See more info at https://www.linux-kvm.org/page/Networking
+# for allowing an ordinary user to manage tunnels,
+# see https://unix.stackexchange.com/questions/243382/making-dev-net-tun-available-to-qemu
+# synopsis:
+# 1. make sure your user is in the `netdev` group
+# 2. chgrp netdev /dev/net/tun # so that the users in netdev can manage it
 #
 # Used by qemu to setup the TAP interface
 # QEMU wants this script to be executable and located at /etc/qemu-ifup
@@ -11,6 +16,7 @@ switch=virbr0
 
 if [ -n "$1" ];then
         # tunctl -u `whoami` -t $1 (use ip tuntap instead!)
+        # whoami here makes the user owner of the tuntap IF
         ip tuntap add $1 mode tap user `whoami`
         ip link set $1 up
         sleep 0.5s
