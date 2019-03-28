@@ -9,6 +9,9 @@
 #
 # Used by qemu to setup the TAP interface
 # QEMU wants this script to be executable and located at /etc/qemu-ifup
+#
+# For creating tuntap interfaces on the fly, you can do:
+# `sudo ip tuntap add mode tap IF-NAME`
 
 set -x
 
