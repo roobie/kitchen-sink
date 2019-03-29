@@ -89,6 +89,8 @@ local qemu_command = ''..
   m('-vga', 'vga')..
   m('-spice', 'spice')..
   ml('-nic', 'nics')..
+  ' '..
+  '-monitor stdio'..
   ''
 
 print(qemu_command)
