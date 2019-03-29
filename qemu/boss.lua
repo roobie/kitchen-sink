@@ -278,7 +278,7 @@ local qemu_command = ''..
   m('-spice', 'spice')..
   ml('-nic', 'nics')..
   ' '..
-  cond(cdrom, '-cdrom '..cdrom, '')..
+  cond(cdrom, '-cdrom '..(cdrom or 0), '')..
   ' '..
   '-monitor stdio'..
   ''
