@@ -174,17 +174,6 @@ local function getopt (arg, opts)
 end
 
 
-local function dump (item)
-  if type(item) == 'table' then
-    for k, v in pairs(item) do
-      print(k, v)
-    end
-  else
-    print(tostring(item))
-  end
-end
-
-
 local getopt_cfg = {
   name = 'boss.lua - helper for qemu stuff';
   version = '1.0.0-alpa1';
@@ -218,7 +207,7 @@ if cfg == nil then
   print('Invalid invocation.')
   print(getopt_cfg.help)
 else
-  dump(cfg)
+  -- dump(cfg)
 end
 
 
@@ -245,8 +234,9 @@ end
 
 local display_version = cfg.opt['--version']
 local config_file = cfg.opt['--config']
+local cdrom = cfg.opt['--cdrom']
 local config = require(string.gsub(config_file, '.lua', ''))
-dump(config)
+-- dump(config)
 
 
 local function m (qemu_arg, k)
@@ -269,6 +259,15 @@ local function ml (qemu_arg, k)
 end
 
 
+local function cond (pred, vtrue, vfalse)
+  if pred then
+    return vtrue
+  else
+    return vfalse
+  end
+end
+
+
 local qemu_command = ''..
   'qemu-system-'..config.arch..
   m('-accel', 'accel')..
@@ -278,6 +277,8 @@ local qemu_command = ''..
   m('-vga', 'vga')..
   m('-spice', 'spice')..
   ml('-nic', 'nics')..
+  ' '..
+  cond(cdrom, '-cdrom '..cdrom, '')..
   ' '..
   '-monitor stdio'..
   ''
