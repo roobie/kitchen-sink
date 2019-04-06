@@ -185,19 +185,42 @@ local getopt_cfg = {
   options = {
     ['--version'] = {
       help = 'Display the version';
-      type = 'boolean'; -- See below
+      type = 'boolean';
     };
     ['--config'] = {
       help = 'Specify config file';
-      type = 'string'; -- See below
+      type = 'string';
+    };
+    ['--detach'] = {
+      help = 'Whether to detach immediately from the tmux session';
+      type = 'boolean';
     };
     ['--cdrom'] = {
       help = 'Specify a cdrom to mount';
-      type = 'string'; -- See below
+      type = 'string';
     };
     -- more options
   };
 }
+
+
+local function cond (pred, vtrue, vfalse)
+  if pred then
+    return vtrue()
+  else
+    return vfalse()
+  end
+end
+
+local function val (v)
+  return function ()
+    return v
+  end
+end
+
+local function empty_string_fn ()
+  return ''
+end
 
 
 local cfg = getopt(arg, getopt_cfg)
@@ -219,24 +242,25 @@ local function test_port (port_no)
 end
 
 
+local display_version = cfg.opt['--version']
+local config_file = cfg.opt['--config']
+local cdrom = cfg.opt['--cdrom']
+local detach = cfg.opt['--detach']
+local config = require(string.gsub(config_file, '.lua', ''))
+-- dump(config)
+
+
 local function start_tmux (name, qemu_cmd)
   -- # create a new tmux session named $name, but detach immediately
   os.execute('tmux new-session -d -s '..name)
   -- # send keys to start up qemu (C-m means Return)
   qemu_cmd = string.gsub(qemu_cmd, ' ', ' Space ')
-  os.execute('tmux send-keys '..qemu_cmd..' C-m')
-  os.execute('tmux attach -t '..name)
-  print('tmux session name: '..name, [[
-    A new tmux session was created with the name.
-]])
+  -- os.execute('tmux send-keys '..qemu_cmd..' C-m')
+  print(string.format([[A new tmux session was created with the name "%s".]], name))
+  if not detach then
+    os.execute('tmux attach -t '..name)
+  end
 end
-
-
-local display_version = cfg.opt['--version']
-local config_file = cfg.opt['--config']
-local cdrom = cfg.opt['--cdrom']
-local config = require(string.gsub(config_file, '.lua', ''))
--- dump(config)
 
 
 local function m (qemu_arg, k)
@@ -259,15 +283,6 @@ local function ml (qemu_arg, k)
 end
 
 
-local function cond (pred, vtrue, vfalse)
-  if pred then
-    return vtrue
-  else
-    return vfalse
-  end
-end
-
-
 local qemu_command = ''..
   'qemu-system-'..config.arch..
   m('-accel', 'accel')..
@@ -278,7 +293,7 @@ local qemu_command = ''..
   m('-spice', 'spice')..
   ml('-nic', 'nics')..
   ' '..
-  cond(cdrom, '-cdrom '..(cdrom or 0), '')..
+  cond(cdrom, function () return '-cdrom '..cdrom end, empty_string_fn)..
   ' '..
   '-monitor stdio'..
   ''
